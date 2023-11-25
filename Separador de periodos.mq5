@@ -64,6 +64,7 @@ int OnCalculate(const int rates_total,
          ObjectSetInteger(0, name, OBJPROP_COLOR, LineColor);
          ObjectSetInteger(0, name, OBJPROP_STYLE, LineStyle);
          ObjectSetInteger(0, name, OBJPROP_WIDTH, LineWidth);
+         ObjectSetInteger(0, name, OBJPROP_BACK, true);
          lastTime = time[i];
          if (Period() == PERIOD_D1) lastMonth = t2.mon;
       }
