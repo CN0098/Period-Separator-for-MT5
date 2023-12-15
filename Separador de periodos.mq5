@@ -15,8 +15,13 @@ input int             LineWidth       = 1;          // Line width
 input int             SeparatorHour   = 0;          // Separator hour
 input int             SeparatorMinute = 0;          // Separator minute
 
+input color           TrendLineColor  = clrWhite;   // Trendline color
+input ENUM_LINE_STYLE TrendLineStyle  = STYLE_SOLID; // Trendline style
+input int             TrendLineWidth  = 2;          // Trendline width
+
 datetime lastTime = 0;
 int lastMonth = 0;
+datetime nextTime = 0;
 
 //±-----------------------------------------------------------------+
 //| Custom indicator initialization function                        |
@@ -27,7 +32,7 @@ int OnInit()
    for(int i=ObjectsTotal(0)-1; i>=0; i--) 
    {
       string name = ObjectName(0, i);
-      if(ObjectGetInteger(0, name, OBJPROP_TYPE) == OBJ_VLINE)
+      if(ObjectGetInteger(0, name, OBJPROP_TYPE) == OBJ_VLINE || ObjectGetInteger(0, name, OBJPROP_TYPE) == OBJ_TREND)
          ObjectDelete(0, name);
    }
    return(INIT_SUCCEEDED);
@@ -49,9 +54,6 @@ int OnCalculate(const int rates_total,
 {
    MqlDateTime t2;
    int lastTrendlineIndex = -1; // Almacena el índice de la última vela donde se dibujó una línea de tendencia
-                                // A este código le falta una función de "next trendline index", que representaría el punto
-                                // donde el siguiente time[i] iría colocado. Porque funciona, pero la trendline del período en curso no pinta.
-                                // Ahora, de la misma manera que calculaste el índice de la vela anterior, necesitaría implementar un cálculo para la vela siguiente. Algo así como "el time[i]+1"... ya que la trendline para el último período, que es el que está aún en curso, no tiene cómo dibujarse.
    for(int i = prev_calculated; i < rates_total; i++)
    {
       TimeToStruct(time[i], t2);
