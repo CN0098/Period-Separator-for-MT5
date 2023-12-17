@@ -39,7 +39,7 @@ int OnInit()
 }
 
 //±-----------------------------------------------------------------+
-//| Función de iteración del indicador personalizado                |
+//| Custom indicator iteration function                             |
 //±-----------------------------------------------------------------+
 int OnCalculate(const int rates_total,
                 const int prev_calculated,
@@ -53,7 +53,7 @@ int OnCalculate(const int rates_total,
                 const int &spread[])
 {
    MqlDateTime t2;
-   int lastTrendlineIndex = -1; // Almacena el índice de la última vela donde se dibujó una línea de tendencia
+   int lastTrendlineIndex = -1; // Stores the index of the last candle where a trendline was drawn
    for(int i = prev_calculated; i < rates_total; i++)
    {
       TimeToStruct(time[i], t2);
@@ -63,7 +63,7 @@ int OnCalculate(const int rates_total,
           (Period() == PERIOD_H4 && t2.day_of_week == 1 && t2.hour == 0 && t2.min == 0 && lastTime != time[i]) ||
           (Period() <= PERIOD_H3 && t2.hour == SeparatorHour && t2.min == SeparatorMinute && lastTime != time[i])) 
       {
-         // Crear una nueva línea vertical
+         // Create a new vertical line
          string name = "vline_" + TimeToString(time[i], TIME_DATE|TIME_MINUTES);
          ObjectCreate(0, name, OBJ_VLINE, 0, time[i], 0);
          ObjectSetInteger(0, name, OBJPROP_COLOR, LineColor);
@@ -71,7 +71,7 @@ int OnCalculate(const int rates_total,
          ObjectSetInteger(0, name, OBJPROP_WIDTH, LineWidth);
          ObjectSetInteger(0, name, OBJPROP_BACK, true);
 
-         // Crear una nueva línea de tendencia
+         // Create a new trendline
          if(lastTrendlineIndex != -1)
          {
             string trendline_name = "trendline_" + TimeToString(time[lastTrendlineIndex], TIME_DATE|TIME_MINUTES);
@@ -87,5 +87,29 @@ int OnCalculate(const int rates_total,
          if (Period() == PERIOD_D1) lastMonth = t2.mon;
       }
    }
+
+   // Calculate the next point in time where a line would be drawn according to the rules
+   MqlDateTime nextT2;
+   nextTime = iTime(Symbol(), Period(), 0); // Current time of the chart
+   while(true) {
+      nextTime += PeriodSeconds(); // Advance to the next period
+      TimeToStruct(nextTime, nextT2);
+      if ((Period() == PERIOD_D1 && nextT2.mon != lastMonth && nextT2.day_of_week >= 1 && nextT2.day_of_week <= 5) || 
+          (Period() == PERIOD_W1 && nextT2.mon == 1 && nextT2.day <= 7) ||
+          (Period() == PERIOD_MN1 && nextT2.mon == 1 && nextT2.day == 1) ||
+          (Period() == PERIOD_H4 && nextT2.day_of_week == 1 && nextT2.hour == 0 && nextT2.min == 0) ||
+          (Period() <= PERIOD_H3 && nextT2.hour == SeparatorHour && nextT2.min == SeparatorMinute)) 
+      {
+         // Create a new vertical line in the future
+         string name = "vline_" + TimeToString(nextTime, TIME_DATE|TIME_MINUTES);
+         ObjectCreate(0, name, OBJ_VLINE, 0, nextTime, 0);
+         ObjectSetInteger(0, name, OBJPROP_COLOR, LineColor);
+         ObjectSetInteger(0, name, OBJPROP_STYLE, LineStyle);
+         ObjectSetInteger(0, name, OBJPROP_WIDTH, LineWidth);
+         ObjectSetInteger(0, name, OBJPROP_BACK, true);
+         break;
+      }
+   }
+
    return(rates_total);
 }
