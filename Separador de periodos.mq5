@@ -54,6 +54,7 @@ int OnCalculate(const int rates_total,
 {
    MqlDateTime t2;
    int lastTrendlineIndex = -1; // Stores the index of the last candle where a trendline was drawn
+   int currentTrendlineIndex = 0; // Stores the index of the current candle where a trendline is to be drawn as well
    for(int i = prev_calculated; i < rates_total; i++)
    {
       TimeToStruct(time[i], t2);
@@ -72,7 +73,20 @@ int OnCalculate(const int rates_total,
          ObjectSetInteger(0, name, OBJPROP_BACK, true);
 
          // Create a new trendline
-         if(lastTrendlineIndex != -1)
+         
+         // Creates a "current" trendline. Represents the ongoing period.
+         if (currentTrendlineIndex == 0)
+         {
+             string trendline_name = "trendline_" + TimeToString(time[i], TIME_DATE|TIME_MINUTES);
+             ObjectCreate(0, trendline_name, OBJ_TREND, 0, time[i], open[i], TimeCurrent(), open[i]);
+             ObjectSetInteger(0, trendline_name, OBJPROP_COLOR, clrWhite);
+             ObjectSetInteger(0, trendline_name, OBJPROP_STYLE, STYLE_SOLID);
+             ObjectSetInteger(0, trendline_name, OBJPROP_WIDTH, 2);
+             ObjectSetInteger(0, trendline_name, OBJPROP_BACK, true);
+         }
+
+         
+         if(lastTrendlineIndex != -1)               // Verifica si el índice de la última línea de tendencia no es -1, lo que indica que ya existe una línea de tendencia previa.
          {
             string trendline_name = "trendline_" + TimeToString(time[lastTrendlineIndex], TIME_DATE|TIME_MINUTES);
             ObjectCreate(0, trendline_name, OBJ_TREND, 0, time[lastTrendlineIndex], open[lastTrendlineIndex], time[i], open[lastTrendlineIndex]);
